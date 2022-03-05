@@ -1,3 +1,3 @@
 # 365_lab7
-Group Mates: Mac, Daniel, Ryan(Diankui) Zhang
+<p>Group Mates: Mac, Daniel, Ryan(Diankui) Zhang </p>
 This lab links SQL database and programs using existing tools
