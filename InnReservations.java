@@ -44,6 +44,7 @@ public class InnReservations {
 				case 3: hp.demo3(); break;
 				case 4: hp.demo4(); break;
 				case 5: hp.demo5(); break;
+				case 6: hp.demo6(); break;
 			}
 		} catch (SQLException e) {
 			System.err.println("SQLException: " + e.getMessage());
@@ -52,9 +53,9 @@ public class InnReservations {
 		}
 	}
 
-	// Demo1 - Establish JDBC connection, execute DDL statement
+	// FR1: Rooms and Rates.
 	private void demo1() throws SQLException {
-		System.out.println("demo1: Add AvailUntil column to hp_goods table\r\n");
+		System.out.println("FR1: Rooms and Rates.\r\n");
 			
 		// Step 0: Load MySQL JDBC Driver
 		// No longer required as of JDBC 2.0  / Java 6
@@ -85,22 +86,19 @@ public class InnReservations {
 	}
 
 
-	// Demo2 - Establish JDBC connection, execute SELECT query, read & print result
+	// FR2: Reservations
 	private void demo2() throws SQLException {
-		System.out.println("demo2: List content of hp_goods table\r\n");
+		System.out.println("FR2: Reservations\r\n");
 		// Step 1: Establish connection to RDBMS
 		try (Connection conn = DriverManager.getConnection(System.getenv("HP_JDBC_URL"),
 								System.getenv("HP_JDBC_USER"),
 								System.getenv("HP_JDBC_PW"))) {
 			// Step 2: Construct SQL statement
 			String sql = "SELECT * FROM hp_goods";
-
 			// Step 3: (omitted in this example) Start transaction
-
 			// Step 4: Send SQL statement to DBMS
 			try (Statement stmt = conn.createStatement();
 				ResultSet rs = stmt.executeQuery(sql)) {
-
 				// Step 5: Receive results
 				while (rs.next()) {
 					String flavor = rs.getString("Flavor");
@@ -109,57 +107,49 @@ public class InnReservations {
 					System.out.format("%s %s ($%.2f) %n", flavor, food, price);
 				}
 			}
-
 			// Step 6: (omitted in this example) Commit or rollback transaction
 		}
 		// Step 7: Close connection (handled by try-with-resources syntax)
 	}
 
 
-	// Demo3 - Establish JDBC connection, execute DML query (UPDATE)
+	// FR3: Reservation Change
 	// -------------------------------------------
 	// Never (ever) write database code like this!
 	// -------------------------------------------
 	private void demo3() throws SQLException {
-		System.out.println("demo3: Populate AvailUntil column using string concatenation\r\n");		
+		System.out.println("FR3: Reservation Change\r\n");		
 		// Step 1: Establish connection to RDBMS
 		try (Connection conn = DriverManager.getConnection(System.getenv("HP_JDBC_URL"),
 								System.getenv("HP_JDBC_USER"),
 								System.getenv("HP_JDBC_PW"))) {
-		// Step 2: Construct SQL statement
-		Scanner scanner = new Scanner(System.in);
-		System.out.print("Enter a flavor: ");
-		String flavor = scanner.nextLine();
-		System.out.format("Until what date will %s be available (YYYY-MM-DD)? ", flavor);
-		String availUntilDate = scanner.nextLine();
-
-		// -------------------------------------------
-		// Never (ever) write database code like this!
-		// -------------------------------------------
-		String updateSql = "UPDATE hp_goods SET AvailUntil = '" + availUntilDate + "' " +
-									"WHERE Flavor = '" + flavor + "'";
-
-		// Step 3: (omitted in this example) Start transaction
-		
-		try (Statement stmt = conn.createStatement()) {
-
-	// Step 4: Send SQL statement to DBMS
-	int rowCount = stmt.executeUpdate(updateSql);
-
-	// Step 5: Handle results
-	System.out.format("Updated all '%s' flavored pastries (%d records) %n", flavor, rowCount);		
+			// Step 2: Construct SQL statement
+			Scanner scanner = new Scanner(System.in);
+			System.out.print("Enter a flavor: ");
+			String flavor = scanner.nextLine();
+			System.out.format("Until what date will %s be available (YYYY-MM-DD)? ", flavor);
+			String availUntilDate = scanner.nextLine();
+			// -------------------------------------------
+			// Never (ever) write database code like this!
+			// -------------------------------------------
+			String updateSql = "UPDATE hp_goods SET AvailUntil = '" + availUntilDate + "' " +
+										"WHERE Flavor = '" + flavor + "'";
+			// Step 3: (omitted in this example) Start transaction
+			try (Statement stmt = conn.createStatement()) {
+				// Step 4: Send SQL statement to DBMS
+				int rowCount = stmt.executeUpdate(updateSql);
+				// Step 5: Handle results
+				System.out.format("Updated all '%s' flavored pastries (%d records) %n", flavor, rowCount);		
+			}
+			// Step 6: (omitted in this example) Commit or rollback transaction
 		}
-
-		// Step 6: (omitted in this example) Commit or rollback transaction
-		
-	}
 	// Step 7: Close connection (handled implcitly by try-with-resources syntax)
 	}
 
 
-	// Demo4 - Establish JDBC connection, execute DML query (UPDATE) using PreparedStatement / transaction    
+	// Reservation Cancellation  
 	private void demo4() throws SQLException {
-		System.out.println("demo4: Populate AvailUntil column using PreparedStatement\r\n");
+		System.out.println("Reservation Cancellation\r\n");
 			
 		// Step 1: Establish connection to RDBMS
 		try (Connection conn = DriverManager.getConnection(System.getenv("HP_JDBC_URL"),
@@ -198,7 +188,7 @@ public class InnReservations {
 	// Demo5 - Construct a query using PreparedStatement
 	private void demo5() throws SQLException {
 
-		System.out.println("demo5: Run SELECT query using PreparedStatement\r\n");
+		System.out.println("FR5: Detailed Reservation Information\r\n");
 		
 		// Step 1: Establish connection to RDBMS
 		try (Connection conn = DriverManager.getConnection(System.getenv("HP_JDBC_URL"),
@@ -234,5 +224,10 @@ public class InnReservations {
 				}
 			}
 		}
+	}
+
+	//FR6: Revenue
+	private void demo6() {
+
 	}
 }
