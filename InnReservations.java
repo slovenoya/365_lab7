@@ -38,17 +38,19 @@ public class InnReservations {
 		System.out.println("Welcome to the final project!");
 		String resp = "";
 		Scanner scanner = new Scanner(System.in);
-		while(!resp.equals("q")) {
-			System.out.println(
-				"1: Rooms and Rates" + 
-				"\n2: Reservations" + 
-				"\n3: Reservation Change" + 
-				"\n4: Reservation Cancellation" + 
-				"\n5: Detailed Reservation Information" + 
-				"\n6: Revenue" + 
-				"\nq: quit");
-			System.out.print("Please choose your service number: ");
-			resp = scanner.next();
+		System.out.println(
+			"1: Rooms and Rates" + 
+			"\n2: Reservations" + 
+			"\n3: Reservation Change" + 
+			"\n4: Reservation Cancellation" + 
+			"\n5: Detailed Reservation Information" + 
+			"\n6: Revenue" + 
+			"\nq: quit");
+		System.out.print("Please choose your service number: ");
+		do {
+
+			if (scanner.hasNext())
+				resp = scanner.next();
 			if (resp.equals("q")) {
 				System.out.println("Bye!");
 				break;
@@ -64,17 +66,25 @@ public class InnReservations {
 					case 5: hp.demo5(); break;
 					case 6: hp.demo6(); break;
 				}
-				System.out.println("Services Available: ");
+				System.out.println(
+					"1: Rooms and Rates" + 
+					"\n2: Reservations" + 
+					"\n3: Reservation Change" + 
+					"\n4: Reservation Cancellation" + 
+					"\n5: Detailed Reservation Information" + 
+					"\n6: Revenue" + 
+					"\nq: quit");
+				System.out.print("Please choose your service number: ");
 			} catch (SQLException e) {
 				System.err.println("SQLException: " + e.getMessage());
 			} catch (Exception e2) {
 				System.err.println("Exception: " + e2.getMessage());
 			}
-		} 
-		scanner.close();
+		} while(!resp.equals("q") && scanner.hasNext());
 	}
 
 	// FR1: Rooms and Rates.
+	// done
 	private void demo1() throws SQLException {
 		System.out.println("FR1: Rooms and Rates.\r\n");
 			
@@ -167,8 +177,35 @@ public class InnReservations {
 
 
 	// FR2: Reservations
+	//TODO
 	private void demo2() throws SQLException {
-		System.out.println("FR2: Reservations\r\n");
+		String firstName;
+		String lastName;
+		String roomCode;
+		String bedType;
+		String begin;		//begin date
+		String end;			//end date
+		int children; 	//number of children
+		int adult;			//number of adults
+
+		Scanner scanner = new Scanner(System.in);
+		System.out.print("Enter your First Name: ");
+		firstName = scanner.next();
+		System.out.print("Enter your Last Name: ");
+		lastName = scanner.next();	
+		System.out.print("Enter your Desired Room Code(Enter 'Any' if there is no preference): ");
+		roomCode = scanner.next();	
+		System.out.print("Enter your Desired Bed Type(Enter 'Any' if there is no preference):  ");
+		bedType = scanner.next();	
+		System.out.print("Enter your Begin Date: ");
+		begin = scanner.next();
+		System.out.print("Enter your Leaving Date: ");
+		end = scanner.next();	
+		System.out.print("Enter Number of Children: ");
+		children = scanner.nextInt();
+		System.out.print("Enter Number of Adults: ");
+		adult = scanner.nextInt();
+		
 		// Step 1: Establish connection to RDBMS
 		try (Connection conn = DriverManager.getConnection(System.getenv("HP_JDBC_URL"),
 								System.getenv("HP_JDBC_USER"),
@@ -197,6 +234,7 @@ public class InnReservations {
 	// -------------------------------------------
 	// Never (ever) write database code like this!
 	// -------------------------------------------
+	//TODO
 	private void demo3() throws SQLException {
 		System.out.println("FR3: Reservation Change\r\n");		
 		// Step 1: Establish connection to RDBMS
@@ -214,7 +252,6 @@ public class InnReservations {
 			// -------------------------------------------
 			String updateSql = "UPDATE hp_goods SET AvailUntil = '" + availUntilDate + "' " +
 										"WHERE Flavor = '" + flavor + "'";
-			scanner.close();
 			// Step 3: (omitted in this example) Start transaction
 			try (Statement stmt = conn.createStatement()) {
 				// Step 4: Send SQL statement to DBMS
@@ -229,6 +266,7 @@ public class InnReservations {
 
 
 	// Reservation Cancellation  
+	//TODO
 	private void demo4() throws SQLException {
 		System.out.println("Reservation Cancellation\r\n");
 			
@@ -260,8 +298,6 @@ public class InnReservations {
 				} catch (SQLException e) {
 							conn.rollback();
 				}
-			scanner.close();
-
 		}
 		// Step 7: Close connection (handled implcitly by try-with-resources syntax)
 	}
@@ -269,6 +305,7 @@ public class InnReservations {
 
 
 	// Demo5 - Construct a query using PreparedStatement
+	//TODO
 	private void demo5() throws SQLException {
 
 		System.out.println("FR5: Detailed Reservation Information\r\n");
@@ -306,11 +343,11 @@ public class InnReservations {
 					System.out.format("----------------------%nFound %d match%s %n", matchCount, matchCount == 1 ? "" : "es");
 				}
 			}
-			scanner.close();
 		}
 	}
 
 	//FR6: Revenue
+	// TODO
 	private void demo6() {
 
 	}
