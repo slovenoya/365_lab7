@@ -5,9 +5,9 @@ import java.sql.SQLException;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 
-import java.util.Map;
+// import java.util.Map;
 import java.util.Scanner;
-import java.util.LinkedHashMap;
+// import java.util.LinkedHashMap;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.ArrayList;
@@ -35,22 +35,37 @@ export HP_JDBC_PW=...
 */
 public class InnReservations {
 	public static void main(String[] args) {
-		try {
-			InnReservations hp = new InnReservations();
-			int demoNum = Integer.parseInt(args[0]);    
-			switch (demoNum) {
-				case 1: hp.demo1(); break;
-				case 2: hp.demo2(); break;
-				case 3: hp.demo3(); break;
-				case 4: hp.demo4(); break;
-				case 5: hp.demo5(); break;
-				case 6: hp.demo6(); break;
+		System.out.println("Welcome to the final project! Please choose your service number: ");
+		String resp = "";
+		Scanner scanner = new Scanner(System.in);
+		while(!resp.equals("q")) {
+			System.out.println(
+				"\n1: Rooms and Rates" + 
+				"\n2: Reservations" + 
+				"\n3: Reservation Change" + 
+				"\n4: Reservation Cancellation" + 
+				"\n5: Detailed Reservation Information" + 
+				"\n6: Revenue" + 
+				"\nq: quit");
+			resp = scanner.next();
+			try {
+				InnReservations hp = new InnReservations();
+				int demoNum = Integer.parseInt(resp);    
+				switch (demoNum) {
+					case 1: hp.demo1(); break;
+					case 2: hp.demo2(); break;
+					case 3: hp.demo3(); break;
+					case 4: hp.demo4(); break;
+					case 5: hp.demo5(); break;
+					case 6: hp.demo6(); break;
+				}
+			} catch (SQLException e) {
+				System.err.println("SQLException: " + e.getMessage());
+			} catch (Exception e2) {
+				System.err.println("Exception: " + e2.getMessage());
 			}
-		} catch (SQLException e) {
-			System.err.println("SQLException: " + e.getMessage());
-		} catch (Exception e2) {
-			System.err.println("Exception: " + e2.getMessage());
-		}
+		} 
+		scanner.close();
 	}
 
 	// FR1: Rooms and Rates.
@@ -193,6 +208,7 @@ public class InnReservations {
 			// -------------------------------------------
 			String updateSql = "UPDATE hp_goods SET AvailUntil = '" + availUntilDate + "' " +
 										"WHERE Flavor = '" + flavor + "'";
+			scanner.close();
 			// Step 3: (omitted in this example) Start transaction
 			try (Statement stmt = conn.createStatement()) {
 				// Step 4: Send SQL statement to DBMS
@@ -238,6 +254,8 @@ public class InnReservations {
 				} catch (SQLException e) {
 							conn.rollback();
 				}
+			scanner.close();
+
 		}
 		// Step 7: Close connection (handled implcitly by try-with-resources syntax)
 	}
@@ -282,6 +300,7 @@ public class InnReservations {
 					System.out.format("----------------------%nFound %d match%s %n", matchCount, matchCount == 1 ? "" : "es");
 				}
 			}
+			scanner.close();
 		}
 	}
 

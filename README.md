@@ -3,6 +3,4 @@
 <p>This lab links SQL database and programs using existing tools</p>
 <p>user name: rzhang21</p>
 <p>password: CSC365-W22_027080020</p>
-<p> compile: javac *.java</p>
-<p> run: 1. source auth.jdbc.TEMPLATE </p>
-<p> 2. java -cp mysql-connector-java-8.0.16.jar:. InnReservations </p>
+<p> run: ./compile_and_run.sh </p>
