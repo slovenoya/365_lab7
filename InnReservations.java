@@ -39,7 +39,8 @@ public class InnReservations {
 		String resp = "";
 		Scanner scanner = new Scanner(System.in);
 		System.out.println(
-			"1: Rooms and Rates" + 
+			// "0: reset the database" + 
+			"\n1: Rooms and Rates" + 
 			"\n2: Reservations" + 
 			"\n3: Reservation Change" + 
 			"\n4: Reservation Cancellation" + 
@@ -59,6 +60,7 @@ public class InnReservations {
 				InnReservations hp = new InnReservations();
 				int demoNum = Integer.parseInt(resp);    
 				switch (demoNum) {
+					// case 0: hp.reset(); break;
 					case 1: hp.demo1(); break;
 					case 2: hp.demo2(); break;
 					case 3: hp.demo3(); break;
@@ -67,7 +69,8 @@ public class InnReservations {
 					case 6: hp.demo6(); break;
 				}
 				System.out.println(
-					"1: Rooms and Rates" + 
+					// "0: reset the database" + 
+					"\n1: Rooms and Rates" + 
 					"\n2: Reservations" + 
 					"\n3: Reservation Change" + 
 					"\n4: Reservation Cancellation" + 
@@ -82,6 +85,27 @@ public class InnReservations {
 			}
 		} while(!resp.equals("q") && scanner.hasNext());
 	}
+
+	//reset the tables. 
+	// private void reset() throws SQLException {
+	// 	try (Connection conn = DriverManager.getConnection(System.getenv("HP_JDBC_URL"),
+	// 							System.getenv("HP_JDBC_USER"),
+	// 							System.getenv("HP_JDBC_PW"))) {
+	// 		String sql = "SET FOREIGN_KEY_CHECKS=0;\n" +
+	// 		"drop table if exists lab7_reservations;\n" +
+	// 		"drop table if exists lab7_rooms;\n" +
+	// 		"CREATE TABLE IF NOT EXISTS lab7_reservations (CODE int(11) PRIMARY KEY,Room char(5) NOT NULL,CheckIn date NOT NULL,Checkout date NOT NULL,Rate DECIMAL(6,2) NOT NULL,LastName varchar(15) NOT NULL,FirstName varchar(15) NOT NULL,Adults int(11) NOT NULL,Kids int(11) NOT NULL,FOREIGN KEY (Room) REFERENCES lab7_rooms (RoomCode));\n" +
+	// 		"CREATE TABLE IF NOT EXISTS lab7_rooms (RoomCode char(5) PRIMARY KEY,RoomName varchar(30) NOT NULL,Beds int(11) NOT NULL,bedType varchar(8) NOT NULL,maxOcc int(11) NOT NULL,basePrice DECIMAL(6,2) NOT NULL,decor varchar(20) NOT NULL,UNIQUE (RoomName));\n" +
+	// 		"INSERT INTO lab7_rooms SELECT * FROM INN.rooms;\n" +
+	// 		"INSERT INTO lab7_reservations \n" +
+	// 		"    SELECT CODE, Room,DATE_ADD(CheckIn, INTERVAL 134 MONTH),DATE_ADD(Checkout, INTERVAL 134 MONTH),Rate, LastName, FirstName, Adults, Kids \n" +
+	// 		"    FROM INN.reservations;";
+	// 		try (Statement stmt = conn.createStatement()) {
+	// 			boolean exRes = stmt.execute(sql);
+	// 			System.out.format("Result from ALTER: %b %n", exRes);
+	// 		}
+	// 	}
+	// }
 
 	// FR1: Rooms and Rates.
 	// done
@@ -177,7 +201,6 @@ public class InnReservations {
 
 
 	// FR2: Reservations
-	//TODO
 	private void demo2() throws SQLException {
 		String firstName;
 		String lastName;
@@ -187,7 +210,6 @@ public class InnReservations {
 		String end;			//end date
 		int children; 	//number of children
 		int adult;			//number of adults
-
 		Scanner scanner = new Scanner(System.in);
 		System.out.print("Enter your First Name: ");
 		firstName = scanner.next();
@@ -197,32 +219,27 @@ public class InnReservations {
 		roomCode = scanner.next();	
 		System.out.print("Enter your Desired Bed Type(Enter 'Any' if there is no preference):  ");
 		bedType = scanner.next();	
-		System.out.print("Enter your Begin Date: ");
+		System.out.print("Enter your Begin Date(YYYY-MM-DD): ");
 		begin = scanner.next();
-		System.out.print("Enter your Leaving Date: ");
+		System.out.print("Enter your Leaving Date(YYYY-MM-DD)s: ");
 		end = scanner.next();	
 		System.out.print("Enter Number of Children: ");
 		children = scanner.nextInt();
 		System.out.print("Enter Number of Adults: ");
 		adult = scanner.nextInt();
-		
+
+		//start the search
+		String searchSql = "";
 		// Step 1: Establish connection to RDBMS
 		try (Connection conn = DriverManager.getConnection(System.getenv("HP_JDBC_URL"),
 								System.getenv("HP_JDBC_USER"),
 								System.getenv("HP_JDBC_PW"))) {
 			// Step 2: Construct SQL statement
-			String sql = "SELECT * FROM hp_goods";
+
 			// Step 3: (omitted in this example) Start transaction
 			// Step 4: Send SQL statement to DBMS
 			try (Statement stmt = conn.createStatement();
-				ResultSet rs = stmt.executeQuery(sql)) {
-				// Step 5: Receive results
-				while (rs.next()) {
-					String flavor = rs.getString("Flavor");
-					String food = rs.getString("Food");
-					float price = rs.getFloat("price");
-					System.out.format("%s %s ($%.2f) %n", flavor, food, price);
-				}
+				ResultSet rs = stmt.executeQuery(searchSql)) {
 			}
 			// Step 6: (omitted in this example) Commit or rollback transaction
 		}
@@ -231,9 +248,6 @@ public class InnReservations {
 
 
 	// FR3: Reservation Change
-	// -------------------------------------------
-	// Never (ever) write database code like this!
-	// -------------------------------------------
 	//TODO
 	private void demo3() throws SQLException {
 		System.out.println("FR3: Reservation Change\r\n");		
@@ -241,29 +255,10 @@ public class InnReservations {
 		try (Connection conn = DriverManager.getConnection(System.getenv("HP_JDBC_URL"),
 								System.getenv("HP_JDBC_USER"),
 								System.getenv("HP_JDBC_PW"))) {
-			// Step 2: Construct SQL statement
-			Scanner scanner = new Scanner(System.in);
-			System.out.print("Enter a flavor: ");
-			String flavor = scanner.nextLine();
-			System.out.format("Until what date will %s be available (YYYY-MM-DD)? ", flavor);
-			String availUntilDate = scanner.nextLine();
-			// -------------------------------------------
-			// Never (ever) write database code like this!
-			// -------------------------------------------
-			String updateSql = "UPDATE hp_goods SET AvailUntil = '" + availUntilDate + "' " +
-										"WHERE Flavor = '" + flavor + "'";
-			// Step 3: (omitted in this example) Start transaction
-			try (Statement stmt = conn.createStatement()) {
-				// Step 4: Send SQL statement to DBMS
-				int rowCount = stmt.executeUpdate(updateSql);
-				// Step 5: Handle results
-				System.out.format("Updated all '%s' flavored pastries (%d records) %n", flavor, rowCount);		
+			try (Statement stmt = conn.createStatement()) {	
 			}
-			// Step 6: (omitted in this example) Commit or rollback transaction
 		}
-	// Step 7: Close connection (handled implcitly by try-with-resources syntax)
 	}
-
 
 	// Reservation Cancellation  
 	//TODO
@@ -274,35 +269,33 @@ public class InnReservations {
 		try (Connection conn = DriverManager.getConnection(System.getenv("HP_JDBC_URL"),
 								System.getenv("HP_JDBC_USER"),
 								System.getenv("HP_JDBC_PW"))) {
-				// Step 2: Construct SQL statement
-				Scanner scanner = new Scanner(System.in);
-				System.out.print("Enter a flavor: ");
-				String flavor = scanner.nextLine();
-				System.out.format("Until what date will %s be available (YYYY-MM-DD)? ", flavor);
-				LocalDate availDt = LocalDate.parse(scanner.nextLine());
-				String updateSql = "UPDATE hp_goods SET AvailUntil = ? WHERE Flavor = ?";
+			// Step 2: Construct SQL statement
+			Scanner scanner = new Scanner(System.in);
+			System.out.print("Enter a flavor: ");
+			String flavor = scanner.nextLine();
+			System.out.format("Until what date will %s be available (YYYY-MM-DD)? ", flavor);
+			LocalDate availDt = LocalDate.parse(scanner.nextLine());
+			String updateSql = "UPDATE hp_goods SET AvailUntil = ? WHERE Flavor = ?";
 
-				// Step 3: Start transaction
-				conn.setAutoCommit(false);
-				try (PreparedStatement pstmt = conn.prepareStatement(updateSql)) {
-					// Step 4: Send SQL statement to DBMS
-					pstmt.setDate(1, java.sql.Date.valueOf(availDt));
-					pstmt.setString(2, flavor);
-					int rowCount = pstmt.executeUpdate();
-					
-					// Step 5: Handle results
-					System.out.format("Updated %d records for %s pastries%n", rowCount, flavor);
+			// Step 3: Start transaction
+			conn.setAutoCommit(false);
+			try (PreparedStatement pstmt = conn.prepareStatement(updateSql)) {
+				// Step 4: Send SQL statement to DBMS
+				pstmt.setDate(1, java.sql.Date.valueOf(availDt));
+				pstmt.setString(2, flavor);
+				int rowCount = pstmt.executeUpdate();
+				
+				// Step 5: Handle results
+				System.out.format("Updated %d records for %s pastries%n", rowCount, flavor);
 
-					// Step 6: Commit or rollback transaction
-					conn.commit();
-				} catch (SQLException e) {
-							conn.rollback();
-				}
+				// Step 6: Commit or rollback transaction
+				conn.commit();
+			} catch (SQLException e) {
+						conn.rollback();
+			}
 		}
 		// Step 7: Close connection (handled implcitly by try-with-resources syntax)
 	}
-
-
 
 	// Demo5 - Construct a query using PreparedStatement
 	//TODO
