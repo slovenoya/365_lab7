@@ -33,10 +33,10 @@ export HP_JDBC_URL=jdbc:mysql://db.labthreesixfive.com/winter2020?autoReconnect=
 export HP_JDBC_USER=jmustang
 export HP_JDBC_PW=...
  */
-public class HastyPastry {
+public class InnReservations {
     public static void main(String[] args) {
 	try {
-	    HastyPastry hp = new HastyPastry();
+	    InnReservations hp = new InnReservations();
             int demoNum = Integer.parseInt(args[0]);
             
             switch (demoNum) {
