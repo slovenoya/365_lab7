@@ -35,19 +35,24 @@ export HP_JDBC_PW=...
 */
 public class InnReservations {
 	public static void main(String[] args) {
-		System.out.println("Welcome to the final project! Please choose your service number: ");
+		System.out.println("Welcome to the final project!");
 		String resp = "";
 		Scanner scanner = new Scanner(System.in);
 		while(!resp.equals("q")) {
 			System.out.println(
-				"\n1: Rooms and Rates" + 
+				"1: Rooms and Rates" + 
 				"\n2: Reservations" + 
 				"\n3: Reservation Change" + 
 				"\n4: Reservation Cancellation" + 
 				"\n5: Detailed Reservation Information" + 
 				"\n6: Revenue" + 
 				"\nq: quit");
+			System.out.print("Please choose your service number: ");
 			resp = scanner.next();
+			if (resp.equals("q")) {
+				System.out.println("Bye!");
+				break;
+			}
 			try {
 				InnReservations hp = new InnReservations();
 				int demoNum = Integer.parseInt(resp);    
@@ -59,6 +64,7 @@ public class InnReservations {
 					case 5: hp.demo5(); break;
 					case 6: hp.demo6(); break;
 				}
+				System.out.println("Services Available: ");
 			} catch (SQLException e) {
 				System.err.println("SQLException: " + e.getMessage());
 			} catch (Exception e2) {
