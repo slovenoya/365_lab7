@@ -72,7 +72,59 @@ public class InnReservations {
 								System.getenv("HP_JDBC_USER"),
 								System.getenv("HP_JDBC_PW"))) {
 			// Step 2: Construct SQL statement
-			String sql = "ALTER TABLE hp_goods ADD COLUMN AvailUntil DATE";
+			String sql = "with \n" +
+			"durations as (\n" +
+			"    select Room, Checkin, Checkout, \n" +
+			"    case \n" +
+			"        when datediff(curdate(), checkin) > 180 and datediff(curdate(), checkout) > 0\n" +
+			"            then 180-(datediff(curdate(), checkout))\n" +
+			"        when datediff(curdate(), checkin) <= 180 and datediff(curdate(), checkout) < 0\n" +
+			"            then datediff(curdate(), checkin)\n" +
+			"        when datediff(curdate(), checkin) > 180 and datediff(curdate(), checkout) < 0\n" +
+			"            then 180\n" +
+			"        else\n" +
+			"            datediff(checkout, checkin)\n" +
+			"    end as duration\n" +
+			"    from lab7_reservations join lab7_rooms\n" +
+			"    on Room = RoomCode\n" +
+			"    where datediff(curdate(), checkout) <= 180\n" +
+			"    order by duration desc\n" +
+			"), \n" +
+			"popularity as (\n" +
+			"    select Room, round(sum(duration)/180, 2) as popularity, sum(duration) as occupiedLength from durations\n" +
+			"    group by Room\n" +
+			"    order by popularity desc\n" +
+			"), \n" +
+			"nextAvailable as (\n" +
+			"    select Room, \n" +
+			"    case\n" +
+			"        when datediff(curdate(), checkout) < 0\n" +
+			"            then checkout\n" +
+			"        else\n" +
+			"            curdate()\n" +
+			"    end as nextAvailable\n" +
+			"    from durations\n" +
+			"), \n" +
+			"nextAvailableMax as (\n" +
+			"    select Room, max(nextAvailable) as nextCheckin from nextAvailable group by Room\n" +
+			"), \n" +
+			"allDurations as (\n" +
+			"    select Room, Checkout, datediff(checkout, checkin) as duration from lab7_rooms join lab7_reservations\n" +
+			"    on Room = RoomCode\n" +
+			"), \n" +
+			"mostRecentCheckout as (\n" +
+			"    select Room, max(checkout) as mostRecentCheckout from allDurations\n" +
+			"    group by Room\n" +
+			"), \n" +
+			"mostRecentDuration as (\n" +
+			"    select mostRecentCheckout.Room, duration from mostRecentCheckout join allDurations on mostRecentCheckout.room = allDurations.room\n" +
+			"    where allDurations.checkout = mostRecentCheckout.mostRecentCheckout\n" +
+			")\n" +
+			"\n" +
+			"select n.room, popularity,  nextcheckin as nextAvailableCheckIn, occupiedLength, m.duration as mostRencetCompleteDuration\n" +
+			"    from nextAvailableMax as n join popularity as p on n.room = p.room\n" +
+			"    join mostRecentDuration as m on m.room = n.room\n" +
+			"    order by popularity desc";
 			// Step 3: (omitted in this example) Start transaction
 			try (Statement stmt = conn.createStatement()) {
 				// Step 4: Send SQL statement to DBMS
