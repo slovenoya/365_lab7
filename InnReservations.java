@@ -126,11 +126,18 @@ public class InnReservations {
 			"    join mostRecentDuration as m on m.room = n.room\n" +
 			"    order by popularity desc";
 			// Step 3: (omitted in this example) Start transaction
-			try (Statement stmt = conn.createStatement()) {
-				// Step 4: Send SQL statement to DBMS
-				boolean exRes = stmt.execute(sql);
-				// Step 5: Handle results
-				System.out.format("Result from ALTER: %b %n", exRes);
+			// Step 4: Send SQL statement to DBMS
+			try (Statement stmt = conn.createStatement();
+				// Step 5: Receive results
+				ResultSet rs = stmt.executeQuery(sql)){
+				System.out.println("Room      Popularity     Next Available Check-in      Most Recent Complete Duration");
+				while (rs.next()) {
+					String room = rs.getString("room");
+					float popularity = rs.getFloat("popularity");
+					String nextAvailableCheckIn = rs.getString("nextAvailableCheckIn");
+					int mostRencetCompleteDuration = rs.getInt("mostRencetCompleteDuration");
+					System.out.format("%s        %.2f          %s                            %d %n", room, popularity, nextAvailableCheckIn, mostRencetCompleteDuration);
+				}
 			}
 			// Step 6: (omitted in this example) Commit or rollback transaction
 		}
