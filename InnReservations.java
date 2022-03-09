@@ -33,14 +33,14 @@ export HP_JDBC_URL=jdbc:mysql://db.labthreesixfive.com/winter2020?autoReconnect=
 export HP_JDBC_USER=jmustang
 export HP_JDBC_PW=...
 */
+
 public class InnReservations {
 	public static void main(String[] args) {
 		System.out.println("Welcome to the final project!");
 		String resp = "";
 		Scanner scanner = new Scanner(System.in);
 		System.out.println(
-			// "0: reset the database" + 
-			"\n1: Rooms and Rates" + 
+			"1: Rooms and Rates" + 
 			"\n2: Reservations" + 
 			"\n3: Reservation Change" + 
 			"\n4: Reservation Cancellation" + 
@@ -69,15 +69,16 @@ public class InnReservations {
 					case 6: hp.demo6(); break;
 				}
 				System.out.println(
-					// "0: reset the database" + 
-					"\n1: Rooms and Rates" + 
+					"---------------------------------------" + 
+					"\nchoose from the following services: " + 
+ 					"\n1: Rooms and Rates" + 
 					"\n2: Reservations" + 
 					"\n3: Reservation Change" + 
 					"\n4: Reservation Cancellation" + 
 					"\n5: Detailed Reservation Information" + 
 					"\n6: Revenue" + 
 					"\nq: quit");
-				System.out.print("Please choose your service number: ");
+				System.out.print("\nPlease choose your service number: ");
 			} catch (SQLException e) {
 				System.err.println("SQLException: " + e.getMessage());
 			} catch (Exception e2) {
@@ -86,42 +87,19 @@ public class InnReservations {
 		} while(!resp.equals("q") && scanner.hasNext());
 	}
 
-	//reset the tables. 
-	// private void reset() throws SQLException {
-	// 	try (Connection conn = DriverManager.getConnection(System.getenv("HP_JDBC_URL"),
-	// 							System.getenv("HP_JDBC_USER"),
-	// 							System.getenv("HP_JDBC_PW"))) {
-	// 		String sql = "SET FOREIGN_KEY_CHECKS=0;\n" +
-	// 		"drop table if exists lab7_reservations;\n" +
-	// 		"drop table if exists lab7_rooms;\n" +
-	// 		"CREATE TABLE IF NOT EXISTS lab7_reservations (CODE int(11) PRIMARY KEY,Room char(5) NOT NULL,CheckIn date NOT NULL,Checkout date NOT NULL,Rate DECIMAL(6,2) NOT NULL,LastName varchar(15) NOT NULL,FirstName varchar(15) NOT NULL,Adults int(11) NOT NULL,Kids int(11) NOT NULL,FOREIGN KEY (Room) REFERENCES lab7_rooms (RoomCode));\n" +
-	// 		"CREATE TABLE IF NOT EXISTS lab7_rooms (RoomCode char(5) PRIMARY KEY,RoomName varchar(30) NOT NULL,Beds int(11) NOT NULL,bedType varchar(8) NOT NULL,maxOcc int(11) NOT NULL,basePrice DECIMAL(6,2) NOT NULL,decor varchar(20) NOT NULL,UNIQUE (RoomName));\n" +
-	// 		"INSERT INTO lab7_rooms SELECT * FROM INN.rooms;\n" +
-	// 		"INSERT INTO lab7_reservations \n" +
-	// 		"    SELECT CODE, Room,DATE_ADD(CheckIn, INTERVAL 134 MONTH),DATE_ADD(Checkout, INTERVAL 134 MONTH),Rate, LastName, FirstName, Adults, Kids \n" +
-	// 		"    FROM INN.reservations;";
-	// 		try (Statement stmt = conn.createStatement()) {
-	// 			boolean exRes = stmt.execute(sql);
-	// 			System.out.format("Result from ALTER: %b %n", exRes);
-	// 		}
-	// 	}
-	// }
-
 	// FR1: Rooms and Rates.
 	// done
 	private void demo1() throws SQLException {
-		System.out.println("FR1: Rooms and Rates.\r\n");
-			
+		System.out.println("\nFR1: Rooms and Rates.");		
 		// Step 0: Load MySQL JDBC Driver
 		// No longer required as of JDBC 2.0  / Java 6
-		try{
-			Class.forName("com.mysql.jdbc.Driver");
-			System.out.println("MySQL JDBC Driver loaded");
-		} catch (ClassNotFoundException ex) {
-			System.err.println("Unable to load JDBC Driver");
-			System.exit(-1);
-		}
-
+		// try{
+		// 	Class.forName("com.mysql.jdbc.Driver");
+		// 	System.out.println("MySQL JDBC Driver loaded");
+		// } catch (ClassNotFoundException ex) {
+		// 	System.err.println("Unable to load JDBC Driver");
+		// 	System.exit(-1);
+		// }
 		// Step 1: Establish connection to RDBMS
 		try (Connection conn = DriverManager.getConnection(System.getenv("HP_JDBC_URL"),
 								System.getenv("HP_JDBC_USER"),
@@ -202,6 +180,7 @@ public class InnReservations {
 
 	// FR2: Reservations
 	private void demo2() throws SQLException {
+		System.out.println("\nFR2: Making Reservations");
 		String firstName;
 		String lastName;
 		String roomCode;
@@ -210,6 +189,8 @@ public class InnReservations {
 		String end;			//end date
 		int children; 	//number of children
 		int adult;			//number of adults
+
+		//prompt and take inputs from the user. 
 		Scanner scanner = new Scanner(System.in);
 		System.out.print("Enter your First Name: ");
 		firstName = scanner.next();
@@ -221,31 +202,84 @@ public class InnReservations {
 		bedType = scanner.next();	
 		System.out.print("Enter your Begin Date(YYYY-MM-DD): ");
 		begin = scanner.next();
-		System.out.print("Enter your Leaving Date(YYYY-MM-DD)s: ");
+		System.out.print("Enter your Leaving Date(YYYY-MM-DD): ");
 		end = scanner.next();	
 		System.out.print("Enter Number of Children: ");
 		children = scanner.nextInt();
 		System.out.print("Enter Number of Adults: ");
 		adult = scanner.nextInt();
 
-		//start the search
-		String searchSql = "";
+		int totalPeople = children + adult;
 		// Step 1: Establish connection to RDBMS
 		try (Connection conn = DriverManager.getConnection(System.getenv("HP_JDBC_URL"),
 								System.getenv("HP_JDBC_USER"),
 								System.getenv("HP_JDBC_PW"))) {
-			// Step 2: Construct SQL statement
-
-			// Step 3: (omitted in this example) Start transaction
-			// Step 4: Send SQL statement to DBMS
-			try (Statement stmt = conn.createStatement();
-				ResultSet rs = stmt.executeQuery(searchSql)) {
+			int maxPeople = 0; //largest possible amount of people a room can take. 
+			// set the maxPeople from the database
+			try(Statement stmt = conn.createStatement()) {
+				String sql = "select max(maxOcc) as mxm from lab7_rooms";
+				ResultSet rs = stmt.executeQuery(sql);
+				while (rs.next())
+					maxPeople = rs.getInt("mxm");
 			}
-			// Step 6: (omitted in this example) Commit or rollback transaction
+			//if user's total people > largest capacity of hotel, warn the user and exit the current serving session. 
+			if (totalPeople > maxPeople) {
+				System.out.println("Sorry, our largest room can only take " + maxPeople + " people");
+				return;
+			}
+
+			StringBuffer sb = new StringBuffer("with \n" +
+				"occTime as (\n" +
+				"    select Room from lab7_rooms join lab7_reservations\n" +
+				"    on room = roomCode\n" +
+				"    where (? < checkout and ? > checkin) or (? < checkout and ? > checkin)\n" +
+				"), \n" +
+				"availableRoom as (\n" +
+				"    select RoomCode, BedType from lab7_rooms\n" +
+				"    where RoomCode not in (select * from occTime)\n" +
+				"    and maxOcc >= ?\n" +
+				")\n" +
+				"select RoomCode from availableRoom\n");
+			List<Object> params = new ArrayList<Object>();
+			params.add(java.sql.Date.valueOf(LocalDate.parse(begin)));
+			params.add(java.sql.Date.valueOf(LocalDate.parse(begin)));
+			params.add(java.sql.Date.valueOf(LocalDate.parse(end)));
+			params.add(java.sql.Date.valueOf(LocalDate.parse(end)));
+			params.add(totalPeople);
+			if (!"any".equalsIgnoreCase(roomCode)) {
+				sb.append(" WHERE RoomCode = ?");
+				params.add(roomCode);
+			}
+			if (!"any".equalsIgnoreCase(bedType)) {
+				sb.append(" AND BedType = ?");
+				params.add(bedType);
+			}
+			//search for qualified rooms
+			try (PreparedStatement pstmt = conn.prepareStatement(sb.toString())) {
+				int i = 1;
+				for (Object o: params) {
+					pstmt.setObject(i++, o);
+				}
+				//execute the sql select and display rooms
+				try (ResultSet rs = pstmt.executeQuery()) {
+					if (!rs.next()) {
+						System.out.println("No rooms available, now display 5 room recommendations");
+					} else {
+						//display all available rooms. 
+						i = 1;
+						System.out.println("available rooms: ");
+						while (rs.next()) {
+							System.out.println((i++) + ". " + rs.getString("RoomCode"));
+						}
+					}
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+				conn.rollback();
+			}
 		}
 		// Step 7: Close connection (handled by try-with-resources syntax)
 	}
-
 
 	// FR3: Reservation Change
 	//TODO
