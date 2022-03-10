@@ -123,7 +123,7 @@ public class InnReservations {
 			"        else\n" +
 			"            datediff(checkout, checkin)\n" +
 			"    end as duration\n" +
-			"    from lab7_reservations join lab7_rooms\n" +
+			"    from rzhang21.lab7_reservations join rzhang21.lab7_rooms\n" +
 			"    on Room = RoomCode\n" +
 			"    where datediff(curdate(), checkout) <= 180\n" +
 			"    order by duration desc\n" +
@@ -147,7 +147,7 @@ public class InnReservations {
 			"    select Room, max(nextAvailable) as nextCheckin from nextAvailable group by Room\n" +
 			"), \n" +
 			"allDurations as (\n" +
-			"    select Room, Checkout, datediff(checkout, checkin) as duration from lab7_rooms join lab7_reservations\n" +
+			"    select Room, Checkout, datediff(checkout, checkin) as duration from rzhang21.lab7_rooms join rzhang21.lab7_reservations\n" +
 			"    on Room = RoomCode\n" +
 			"), \n" +
 			"mostRecentCheckout as (\n" +
@@ -221,7 +221,7 @@ public class InnReservations {
 			int maxPeople = 0; //largest possible amount of people a room can take. 
 			// set the maxPeople from the database
 			try(Statement stmt = conn.createStatement()) {
-				String sql = "select max(maxOcc) as mxm from lab7_rooms";
+				String sql = "select max(maxOcc) as mxm from rzhang21.lab7_rooms";
 				ResultSet rs = stmt.executeQuery(sql);
 				while (rs.next())
 					maxPeople = rs.getInt("mxm");
@@ -234,12 +234,12 @@ public class InnReservations {
 
 			String sql = "with \n" +
 				"occTime as (\n" +
-				"    select Room from lab7_rooms join lab7_reservations\n" +
+				"    select Room from rzhang21.lab7_rooms join rzhang21.lab7_reservations\n" +
 				"    on room = roomCode\n" +
 				"    where (? <= checkout and ? >= checkin) or (? <= checkout and ? >= checkin)\n" +
 				"), \n" +
 				"availableRoom as (\n" +
-				"    select RoomCode, BedType from lab7_rooms\n" +
+				"    select RoomCode, BedType from rzhang21.lab7_rooms\n" +
 				"    where RoomCode not in (select * from occTime)\n" +
 				"    and maxOcc >= ?\n" +
 				")\n" +
@@ -318,7 +318,7 @@ public class InnReservations {
 			String codeName = rooms.get(room - 1);
 			String roomName = "";
 			String bedName = "";
-			String requestBaseRateSql = "select RoomCode, basePrice, RoomName, BedType from lab7_rooms\n" +
+			String requestBaseRateSql = "select RoomCode, basePrice, RoomName, BedType from rzhang21.lab7_rooms\n" +
 			"where roomcode = ?";
 			try (PreparedStatement pstmt3 = conn.prepareStatement(requestBaseRateSql)) {
 				pstmt3.setString(1, codeName);
@@ -353,13 +353,13 @@ public class InnReservations {
 			if (scanner.next().equalsIgnoreCase("Y")) {
 				int max = 0;
 				try (Statement stmt = conn.createStatement()) {
-					try (ResultSet rs = stmt.executeQuery("select max(code) as mxm from lab7_reservations")) {
+					try (ResultSet rs = stmt.executeQuery("select max(code) as mxm from rzhang21.lab7_reservations")) {
 						if (rs.next()) {
 							max = rs.getInt("mxm");
 						}
 					}
 				}
-				String insertionSql = "insert into lab7_reservations (Code, Room, Checkin, Checkout, Rate, LastName, Firstname, adults, kids) \n" +
+				String insertionSql = "insert into rzhang21.lab7_reservations (Code, Room, Checkin, Checkout, Rate, LastName, Firstname, adults, kids) \n" +
 				"value (?, ?, ?, ?, ?, ?, ?, ?, ?);";
 				List<Object> insertList = new ArrayList<>();
 				insertList.add(++max);
@@ -408,7 +408,7 @@ public class InnReservations {
 			try (Statement stmt = conn.createStatement()) {
 				System.out.println("Enter your reservation code: ");
 				reservation = scanner.nextInt();
-				String sql = "select * from lab7_reservations where code = " + reservation;
+				String sql = "select * from rzhang21.lab7_reservations where code = " + reservation;
 				try (ResultSet rs = stmt.executeQuery(sql)) {
 					if (rs.next()) {
 						room = rs.getString("Room");
@@ -444,9 +444,9 @@ public class InnReservations {
 			//see if there is any confliction for the new reservation
 			//check date and people number. 
 			String sql = "select (? >= checkin and ? <= checkout) or (? >= checkin and ? <= checkout) or (? > maxOcc) as conflict\n" +
-				"    from lab7_reservations  join lab7_rooms \n" +
+				"    from rzhang21.lab7_reservations  join rzhang21.lab7_rooms \n" +
 				"    on Room = RoomCode\n" +
-				"    where Room = (select room from lab7_reservations where code =" + reservation + ") and code != " + reservation + ";";
+				"    where Room = (select room from rzhang21.lab7_reservations where code =" + reservation + ") and code != " + reservation + ";";
 			try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
 				List<Object> params = new ArrayList<>();
 				int i = 1;
@@ -472,7 +472,7 @@ public class InnReservations {
 			}
 			//the program wuold have returned if there is a conflict. 
 			//now update the request from the user
-			String updateSql = "UPDATE lab7_reservations\n" +
+			String updateSql = "UPDATE rzhang21.lab7_reservations\n" +
 				"SET firstname = ?, lastname = ?, checkin = ?, checkout = ?, kids = ?, adults = ?\n" +
 				"WHERE code = "  + reservation;
 			try (PreparedStatement pstmt = conn.prepareStatement(updateSql)) {
@@ -504,7 +504,7 @@ public class InnReservations {
 			Scanner scanner = new Scanner(System.in);
 			System.out.print("Enter your reservation code: ");
 			int reservationCode = scanner.nextInt();
-			String sql = "delete from lab7_reservations where code = " + reservationCode + ";";
+			String sql = "delete from rzhang21.lab7_reservations where code = " + reservationCode + ";";
 			try (Statement stmt = conn.createStatement()) {
 				stmt.executeUpdate(sql);
 				System.out.println("The reservation has been cancelled!");
@@ -544,7 +544,7 @@ public class InnReservations {
 							System.getenv("HP_JDBC_PW"))) {
 			List<Object> lst = new ArrayList<>();
 			StringBuffer sqlSearch = new StringBuffer("select *\n" +
-				"    from lab7_reservations" +
+				"    from rzhang21.lab7_reservations" +
 				"    where firstname like ? and lastname like ? ");
 			lst.add(firstName + "%");
 			lst.add(lastName + "%");
@@ -616,7 +616,7 @@ public class InnReservations {
 		Map<String, float[]> revenue = new HashMap<>();
 		try (Connection conn = DriverManager.getConnection(System.getenv("HP_JDBC_URL"),System.getenv("HP_JDBC_USER"),System.getenv("HP_JDBC_PW"))) {
 			try (Statement stmt = conn.createStatement()) {
-				try (ResultSet rs = stmt.executeQuery("select distinct room from lab7_reservations")) {
+				try (ResultSet rs = stmt.executeQuery("select distinct room from rzhang21.lab7_reservations")) {
 					while (rs.next()) {
 						float[] floats = new float[13];
 						for (int i =0; i< 13; i++) {
@@ -626,7 +626,7 @@ public class InnReservations {
 					}
 				}
 			}	
-			String sql = "select Room, checkin, checkout, rate from lab7_reservations\n" +
+			String sql = "select Room, checkin, checkout, rate from rzhang21.lab7_reservations\n" +
 			"where checkout >= '2022-01-01'";
 			try (Statement stmt = conn.createStatement()) {
 				try (ResultSet rs = stmt.executeQuery(sql)) {
