@@ -7,10 +7,10 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-// import java.util.Map;
+import java.util.Map;
 import java.util.Scanner;
 import java.time.DayOfWeek;
-// import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.ArrayList;
@@ -577,19 +577,90 @@ public class InnReservations {
 		}
 	}
 
+	private static List<LocalDate> getMonthList() {
+		int year = 2022;
+		LocalDate Jan = LocalDate.of(year,1, 1);
+		LocalDate Feb = LocalDate.of(year,2, 1);
+		LocalDate Mar = LocalDate.of(year,3, 1);
+		LocalDate Apr = LocalDate.of(year,4, 1);
+		LocalDate May = LocalDate.of(year,5, 1);
+		LocalDate Jun = LocalDate.of(year,6, 1);
+		LocalDate Jul = LocalDate.of(year,7, 1);
+		LocalDate Aug = LocalDate.of(year,8, 1);
+		LocalDate Sep = LocalDate.of(year,9, 1);
+		LocalDate Oct = LocalDate.of(year,10, 1);
+		LocalDate Nov = LocalDate.of(year,11, 1);
+		LocalDate Dec = LocalDate.of(year,12, 1);
+		LocalDate Jan2 = LocalDate.of(year + 1,1, 1);
+		List<LocalDate> months = new ArrayList<>();
+		months.add(Jan);
+		months.add(Feb);
+		months.add(Mar);
+		months.add(Apr);
+		months.add(May);
+		months.add(Jun);
+		months.add(Jul);
+		months.add(Aug);
+		months.add(Sep);
+		months.add(Oct);
+		months.add(Nov);
+		months.add(Dec);
+		months.add(Jan2);
+		return months;
+	}
+
 	//FR6: Revenue
-	// TODO
 	private void demo6() throws SQLException {
-		System.out.println("FR6: Detailed Reservation Information");
-		
-		// Step 1: Establish connection to RDBMS
-		try (Connection conn = DriverManager.getConnection(System.getenv("HP_JDBC_URL"),
-							System.getenv("HP_JDBC_USER"),
-							System.getenv("HP_JDBC_PW"))) {
-			Scanner scanner = new Scanner(System.in);		
-
-
-
+		System.out.println("FR6: Revenue");
+		List<LocalDate> months = getMonthList();
+		Map<String, float[]> revenue = new HashMap<>();
+		try (Connection conn = DriverManager.getConnection(System.getenv("HP_JDBC_URL"),System.getenv("HP_JDBC_USER"),System.getenv("HP_JDBC_PW"))) {
+			try (Statement stmt = conn.createStatement()) {
+				try (ResultSet rs = stmt.executeQuery("select distinct room from lab7_reservations")) {
+					while (rs.next()) {
+						float[] floats = new float[13];
+						for (int i =0; i< 13; i++) {
+							floats[i] = 0;
+						}
+ 						revenue.put(rs.getString("room"), new float[13]);
+					}
+				}
+			}	
+			String sql = "select Room, checkin, checkout, rate from lab7_reservations\n" +
+			"where checkout >= '2022-01-01'";
+			try (Statement stmt = conn.createStatement()) {
+				try (ResultSet rs = stmt.executeQuery(sql)) {
+					while (rs.next()) {
+						float[] revens = revenue.get(rs.getString("room"));
+						float rate = rs.getFloat("rate");
+						LocalDate begin = LocalDate.parse(rs.getString("checkin"));
+						LocalDate end = LocalDate.parse(rs.getString("checkout"));
+						for (int i = 0; i < 12; i++) {
+							float rev = 0;
+							if (begin.compareTo(months.get(i)) == 1 && end.compareTo(months.get(i+1)) == -1) {
+								rev = rate * ChronoUnit.DAYS.between(begin, end);
+							} else if (begin.compareTo(months.get(i)) == -1 && end.compareTo(months.get(i)) == 1 && end.compareTo(months.get(i+1)) == -1) {
+								rev = rate * ChronoUnit.DAYS.between(months.get(i), end);
+							} else if (begin.compareTo(months.get(i)) == 1 && end.compareTo(months.get(i+1)) == 1 && begin.compareTo(months.get(i+1)) == -1) {
+								rev = rate * ChronoUnit.DAYS.between(begin, months.get(i+1));
+							} else if (begin.compareTo(months.get(i)) == -1 && end.compareTo(months.get(i+1)) == 1) {
+								rev = rate * ChronoUnit.DAYS.between(months.get(i), months.get(i+1));
+							}
+							// System.out.println(rs.getString("room") + "    month: " + i + "  revenue " + rev + "   rate: " + rate);
+							revens[i] += rev;
+							revens[12] += rev;
+						}
+					}
+				}
+			}
+			System.out.printf("%s%10s%10s%10s%10s%10s%10s%10s%10s%10s%10s%10s%10s%10s\n", "Room", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Total");
+			for (String key : revenue.keySet()) {
+				float[] revens = revenue.get(key);
+				System.out.printf("%s%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f\n", 
+					key, revens[0], revens[1], revens[2], revens[3], 
+					revens[4], revens[5], revens[6], revens[7], 
+					revens[8], revens[9], revens[10], revens[11], revens[12]);
+			}
 		}
 	}
 }
