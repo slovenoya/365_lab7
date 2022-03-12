@@ -98,13 +98,13 @@ public class InnReservations {
 		System.out.println("\nFR1: Rooms and Rates.");		
 		// Step 0: Load MySQL JDBC Driver
 		// No longer required as of JDBC 2.0  / Java 6
-		// try{
-		// 	Class.forName("com.mysql.jdbc.Driver");
-		// 	System.out.println("MySQL JDBC Driver loaded");
-		// } catch (ClassNotFoundException ex) {
-		// 	System.err.println("Unable to load JDBC Driver");
-		// 	System.exit(-1);
-		// }
+		try{
+			Class.forName("com.mysql.jdbc.Driver");
+			System.out.println("MySQL JDBC Driver loaded");
+		} catch (ClassNotFoundException ex) {
+			System.err.println("Unable to load JDBC Driver");
+			System.exit(-1);
+		}
 		// Step 1: Establish connection to RDBMS
 		try (Connection conn = DriverManager.getConnection(System.getenv("HP_JDBC_URL"),
 								System.getenv("HP_JDBC_USER"),
