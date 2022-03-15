@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Scanner;
 import java.time.DayOfWeek;
 import java.util.HashMap;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.ArrayList;
 import java.time.temporal.ChronoUnit;
@@ -53,7 +52,6 @@ public class InnReservations {
 			"\nq: quit");
 		System.out.print("Please choose your service number: ");
 		do {
-
 			if (scanner.hasNext())
 				resp = scanner.next();
 			if (resp.equals("q")) {
@@ -506,8 +504,12 @@ public class InnReservations {
 			int reservationCode = scanner.nextInt();
 			String sql = "delete from rzhang21.lab7_reservations where code = " + reservationCode + ";";
 			try (Statement stmt = conn.createStatement()) {
-				stmt.executeUpdate(sql);
-				System.out.println("The reservation has been cancelled!");
+				int ret = stmt.executeUpdate(sql);
+				if (ret == 0) {
+					System.out.println("No such reservation");
+				} else {
+					System.out.println("The reservation has been cancelled!");
+				}
 			}
 		}
 		// Step 7: Close connection (handled implcitly by try-with-resources syntax)
